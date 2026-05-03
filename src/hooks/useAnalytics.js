@@ -1,0 +1,94 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  deleteCycle,
+  deleteDevice,
+  excludeCycle,
+  getDashboardAnalytics,
+  getDeviceAnalytics,
+  getDeviceCycles,
+  getDevices,
+  includeCycle,
+  renameDevice,
+} from "../api/analytics";
+
+function invalidateDeviceData(queryClient, deviceId) {
+  queryClient.invalidateQueries({ queryKey: ["analytics"] });
+  queryClient.invalidateQueries({ queryKey: ["devices"] });
+  queryClient.invalidateQueries({ queryKey: ["device", deviceId] });
+  queryClient.invalidateQueries({ queryKey: ["cycles", deviceId] });
+}
+
+export function useDashboardAnalytics() {
+  return useQuery({
+    queryKey: ["analytics"],
+    queryFn: getDashboardAnalytics,
+  });
+}
+
+export function useDevices() {
+  return useQuery({
+    queryKey: ["devices"],
+    queryFn: getDevices,
+  });
+}
+
+export function useDeviceAnalytics(deviceId) {
+  return useQuery({
+    queryKey: ["device", deviceId],
+    queryFn: () => getDeviceAnalytics(deviceId),
+    enabled: Boolean(deviceId),
+  });
+}
+
+export function useDeviceCycles(deviceId) {
+  return useQuery({
+    queryKey: ["cycles", deviceId],
+    queryFn: () => getDeviceCycles(deviceId),
+    enabled: Boolean(deviceId),
+  });
+}
+
+export function useRenameDevice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: renameDevice,
+    onSuccess: (_, variables) => invalidateDeviceData(queryClient, variables.deviceId),
+  });
+}
+
+export function useDeleteDevice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteDevice,
+    onSuccess: (_, deviceId) => invalidateDeviceData(queryClient, deviceId),
+  });
+}
+
+export function useExcludeCycle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: excludeCycle,
+    onSuccess: (_, variables) => invalidateDeviceData(queryClient, variables.deviceId),
+  });
+}
+
+export function useIncludeCycle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: includeCycle,
+    onSuccess: (_, variables) => invalidateDeviceData(queryClient, variables.deviceId),
+  });
+}
+
+export function useDeleteCycle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteCycle,
+    onSuccess: (_, variables) => invalidateDeviceData(queryClient, variables.deviceId),
+  });
+}
