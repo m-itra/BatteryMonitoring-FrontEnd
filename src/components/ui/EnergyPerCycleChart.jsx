@@ -3,7 +3,7 @@ import { formatEnergy } from "../../utils/format";
 
 const VALUE_KEYS = [["total_energy_mwh", "Energy used per cycle"]];
 
-function EnergyPerCycleChart({ cycles = [] }) {
+function EnergyPerCycleChart({ cycles = [], yMax }) {
   const includedCycles = cycles.filter((cycle) => !cycle.is_excluded);
 
   return (
@@ -15,6 +15,7 @@ function EnergyPerCycleChart({ cycles = [] }) {
       history={includedCycles}
       showPointLabels
       valueKeys={VALUE_KEYS}
+      yMax={yMax}
       yMin={0}
     />
   );

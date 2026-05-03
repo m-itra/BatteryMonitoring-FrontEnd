@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import AverageLoadPerCycleChart from "../components/ui/AverageLoadPerCycleChart";
 import CapacityHistoryChart from "../components/ui/CapacityHistoryChart";
 import EnergyPerCycleChart from "../components/ui/EnergyPerCycleChart";
+import FullChargeCapacityChart from "../components/ui/FullChargeCapacityChart";
 import MetricCard from "../components/ui/MetricCard";
+import RuntimePerCycleChart from "../components/ui/RuntimePerCycleChart";
 import StatusBadge from "../components/ui/StatusBadge";
 import { EmptyState, ErrorState, LoadingState } from "../components/ui/State";
 import {
@@ -15,7 +18,63 @@ import {
 } from "../hooks/useAnalytics";
 import { asArray, getCycleId, getDeviceName } from "../utils/data";
 import { getErrorMessage } from "../utils/errors";
-import { formatDate, formatDuration, formatEnergy, formatPercent, formatValue } from "../utils/format";
+import {
+  formatDate,
+  formatDuration,
+  formatEnergy,
+  formatPercent,
+  formatPowerMw,
+  formatValue,
+  formatWattsFromMilliwatts,
+} from "../utils/format";
+
+function getSohGap(device) {
+  const capacity = Number(device.current_soh_capacity_percent);
+  const energy = Number(device.current_soh_energy_percent);
+
+  if (Number.isNaN(capacity) || Number.isNaN(energy)) {
+    return null;
+  }
+
+  return capacity - energy;
+}
+
+function getOverallAverageLoadMw(cycles) {
+  const totals = cycles.reduce(
+    (result, cycle) => {
+      const energy = Number(cycle.total_energy_mwh);
+      const duration = Number(cycle.total_duration_seconds);
+
+      if (!Number.isNaN(energy) && !Number.isNaN(duration) && duration > 0) {
+        return {
+          energyMwh: result.energyMwh + energy,
+          hours: result.hours + duration / 3600,
+        };
+      }
+
+      return result;
+    },
+    { energyMwh: 0, hours: 0 },
+  );
+
+  if (totals.hours === 0) {
+    return null;
+  }
+
+  return totals.energyMwh / totals.hours;
+}
+
+function getAverageRuntimeSeconds(cycles) {
+  const durations = cycles
+    .map((cycle) => Number(cycle.total_duration_seconds))
+    .filter((duration) => !Number.isNaN(duration));
+
+  if (durations.length === 0) {
+    return null;
+  }
+
+  return durations.reduce((sum, duration) => sum + duration, 0) / durations.length;
+}
 
 function DevicePage() {
   const { deviceId } = useParams();
@@ -35,9 +94,13 @@ function DevicePage() {
   const defaultDeviceName = getDeviceName(device);
   const deviceName = deviceNameDrafts[deviceId] ?? defaultDeviceName;
   const cycles = asArray(analytics, ["cycles"]);
+  const includedCycles = cycles.filter((cycle) => !cycle.is_excluded);
   const recentSessions = asArray(analytics, ["recent_sessions", "sessions"]);
   const capacityHistory = asArray(analytics, ["capacity_history"]);
   const activeSession = analytics.active_session || null;
+  const sohGap = getSohGap(device);
+  const overallAverageLoadMw = getOverallAverageLoadMw(includedCycles);
+  const averageRuntimeSeconds = getAverageRuntimeSeconds(includedCycles);
 
   if (analyticsQuery.isPending) {
     return <LoadingState title="Loading device" message="Collecting sessions, cycles, and capacity history." />;
@@ -174,7 +237,7 @@ function DevicePage() {
         />
         <MetricCard
           label="Current power"
-          value={formatValue(device.current_net_power_mw)}
+          value={formatPowerMw(device.current_net_power_mw)}
           helper="Negative values mean charging"
         />
         <MetricCard
@@ -197,6 +260,27 @@ function DevicePage() {
           value={formatEnergy(device.reference_capacity_mwh)}
           helper={formatValue(device.reference_capacity_source)}
         />
+        {sohGap !== null && (
+          <MetricCard
+            label="SOH gap"
+            value={formatPercent(sohGap)}
+            helper="Capacity SOH minus energy SOH"
+          />
+        )}
+        {overallAverageLoadMw !== null && (
+          <MetricCard
+            label="Average load overall"
+            value={formatWattsFromMilliwatts(overallAverageLoadMw)}
+            helper="Weighted by included cycle duration"
+          />
+        )}
+        {averageRuntimeSeconds !== null && (
+          <MetricCard
+            label="Average runtime overall"
+            value={formatDuration(averageRuntimeSeconds)}
+            helper="Included cycles only"
+          />
+        )}
       </section>
 
       <section className="section-block">
@@ -260,7 +344,40 @@ function DevicePage() {
             <p>Shows non-excluded cycles for consistency with backend analytics.</p>
           </div>
         </div>
-        <EnergyPerCycleChart cycles={cycles} />
+        <EnergyPerCycleChart cycles={cycles} yMax={Number(device.reference_capacity_mwh)} />
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <h2>Full charge capacity over time</h2>
+            <p>System-reported full available battery capacity in mWh.</p>
+          </div>
+        </div>
+        <FullChargeCapacityChart
+          history={capacityHistory}
+          referenceCapacityMwh={device.reference_capacity_mwh}
+        />
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <h2>Average load per cycle</h2>
+            <p>Non-excluded cycle average power, displayed in watts.</p>
+          </div>
+        </div>
+        <AverageLoadPerCycleChart cycles={cycles} />
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <h2>Runtime per cycle</h2>
+            <p>How long each non-excluded equivalent cycle lasted.</p>
+          </div>
+        </div>
+        <RuntimePerCycleChart cycles={cycles} />
       </section>
 
       <section className="section-block">

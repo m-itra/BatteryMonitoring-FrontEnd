@@ -40,6 +40,7 @@ function HistoryLineChart({
   format = formatValue,
   dateKeys = DATE_KEYS,
   showPointLabels = false,
+  strictYMax = false,
   yMax,
   yMin = 0,
 }) {
@@ -62,8 +63,12 @@ function HistoryLineChart({
     left: 96,
   };
   const maxValue = Math.max(...points.map((point) => point.value));
+  const requestedMax = Number(yMax);
   const domainMin = yMin;
-  const domainMax = Math.max(yMax ?? maxValue, domainMin + 1);
+  const hasRequestedMax = !Number.isNaN(requestedMax);
+  const domainMax = strictYMax && hasRequestedMax
+    ? Math.max(requestedMax, domainMin + 1)
+    : Math.max(hasRequestedMax ? requestedMax : maxValue, maxValue, domainMin + 1);
   const spread = domainMax - domainMin || 1;
   const tickCount = 5;
   const ticks = Array.from({ length: tickCount }, (_, index) => {
