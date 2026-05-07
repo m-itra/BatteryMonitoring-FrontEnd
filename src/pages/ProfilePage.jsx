@@ -40,7 +40,6 @@ function ProfilePage() {
         <div>
           <span className="eyebrow">Аккаунт</span>
           <h1>Профиль</h1>
-          <p>Данные пользователя восстановлены через /api/auth/me.</p>
         </div>
       </header>
 
@@ -50,6 +49,9 @@ function ProfilePage() {
         <MetricCard label="Имя" value={auth.user?.name} />
         <MetricCard label="Email" value={auth.user?.email} />
         <MetricCard label="Роль" value={translateRole(auth.user?.role)} />
+      </section>
+
+      <section className="metric-grid profile-id-grid">
         <MetricCard label="ID пользователя" value={auth.user?.user_id} />
       </section>
 
@@ -57,7 +59,6 @@ function ProfilePage() {
         <div className="section-heading">
           <div>
             <h2>Сессия и аккаунт</h2>
-            <p>Выход очищает cookie-сессию. Удаление аккаунта удаляет профиль на сервере.</p>
           </div>
         </div>
         <div className="button-row">

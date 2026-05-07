@@ -179,6 +179,10 @@
   gap: 14px;
 }
 
+.device-summary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .metric-card,
 .device-card,
 .section-block,
@@ -218,6 +222,10 @@
   overflow-wrap: anywhere;
 }
 
+.profile-id-grid {
+  grid-template-columns: 1fr;
+}
+
 .section-block {
   display: grid;
   gap: 18px;
@@ -226,7 +234,8 @@
 
 .device-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 320px));
+  justify-content: start;
   gap: 14px;
 }
 
@@ -249,6 +258,14 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.device-page-id {
+  margin-top: 6px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .device-stats {
@@ -325,7 +342,8 @@ tbody tr:last-child td {
 }
 
 .table-actions,
-.button-row {
+.button-row,
+.badge-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -430,7 +448,7 @@ input:focus {
 
 .active-session-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -727,6 +745,10 @@ input:focus {
     grid-template-columns: 1fr;
   }
 
+  .device-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .auth-copy h1 {
     font-size: 36px;
   }
@@ -751,7 +773,9 @@ input:focus {
   }
 
   .metric-grid,
+  .device-summary-grid,
   .device-grid,
+  .active-session-grid,
   .rename-form {
     grid-template-columns: 1fr;
   }

@@ -24,6 +24,8 @@ export function useDashboardAnalytics() {
   return useQuery({
     queryKey: ["analytics"],
     queryFn: getDashboardAnalytics,
+    refetchInterval: DEVICE_ANALYTICS_REFETCH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 
@@ -31,6 +33,8 @@ export function useDevices() {
   return useQuery({
     queryKey: ["devices"],
     queryFn: getDevices,
+    refetchInterval: DEVICE_ANALYTICS_REFETCH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 

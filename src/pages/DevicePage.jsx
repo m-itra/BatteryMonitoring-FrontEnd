@@ -6,6 +6,7 @@ import EnergyPerCycleChart from "../components/ui/EnergyPerCycleChart";
 import FullChargeCapacityChart from "../components/ui/FullChargeCapacityChart";
 import MetricCard from "../components/ui/MetricCard";
 import RuntimePerCycleChart from "../components/ui/RuntimePerCycleChart";
+import SohGapChart from "../components/ui/SohGapChart";
 import StatusBadge from "../components/ui/StatusBadge";
 import { EmptyState, ErrorState, LoadingState } from "../components/ui/State";
 import {
@@ -18,18 +19,28 @@ import {
 } from "../hooks/useAnalytics";
 import { asArray, getCycleId, getDeviceName } from "../utils/data";
 import { getErrorMessage } from "../utils/errors";
-import { translatePendingTransition, translateSessionStatus } from "../utils/labels";
+import { translateSessionStatus } from "../utils/labels";
 import {
   formatDate,
   formatDuration,
   formatEnergy,
   formatPercent,
   formatPowerMw,
-  formatValue,
   formatWattsFromMilliwatts,
 } from "../utils/format";
 
 function getSohGap(device) {
+  if (
+    device.current_soh_capacity_percent === undefined ||
+    device.current_soh_capacity_percent === null ||
+    device.current_soh_capacity_percent === "" ||
+    device.current_soh_energy_percent === undefined ||
+    device.current_soh_energy_percent === null ||
+    device.current_soh_energy_percent === ""
+  ) {
+    return null;
+  }
+
   const capacity = Number(device.current_soh_capacity_percent);
   const energy = Number(device.current_soh_energy_percent);
 
@@ -102,6 +113,8 @@ function DevicePage() {
   const sohGap = getSohGap(device);
   const overallAverageLoadMw = getOverallAverageLoadMw(includedCycles);
   const averageRuntimeSeconds = getAverageRuntimeSeconds(includedCycles);
+  const currentPowerMw =
+    device.current_net_power_mw ?? device.current_power_mw ?? device.current_power ?? device.net_power_mw;
 
   if (analyticsQuery.isPending) {
     return <LoadingState title="Загрузка устройства" message="Получаем сессии, циклы и историю ёмкости." />;
@@ -193,7 +206,7 @@ function DevicePage() {
             Обзор
           </Link>
           <h1>{getDeviceName(device)}</h1>
-          <p>Аналитика устройства показана в том виде, в котором её рассчитал сервер.</p>
+          <p className="device-page-id">ID: {deviceId}</p>
         </div>
         <button
           className="button button-danger"
@@ -230,70 +243,45 @@ function DevicePage() {
         </button>
       </form>
 
-      <section className="metric-grid">
+      <section className="metric-grid device-summary-grid">
         <MetricCard
-          label="Текущий заряд"
-          value={formatPercent(device.current_charge_percent)}
-          helper={`Последняя активность: ${formatDate(device.last_seen)}`}
-        />
-        <MetricCard
-          label="Текущая мощность"
-          value={formatPowerMw(device.current_net_power_mw)}
-          helper="Отрицательные значения означают зарядку"
-        />
-        <MetricCard
-          label="SOE"
-          value={formatPercent(device.current_soe_percent)}
-          helper="Состояние энергии"
+          label="Эталонная ёмкость"
+          value={formatEnergy(device.reference_capacity_mwh)}
         />
         <MetricCard
           label="SOH по ёмкости"
           value={formatPercent(device.current_soh_capacity_percent)}
-          helper="Рассчитано сервером"
         />
         <MetricCard
           label="SOH по энергии"
           value={formatPercent(device.current_soh_energy_percent)}
-          helper="Без исключённых циклов"
         />
         <MetricCard
-          label="Эталонная ёмкость"
-          value={formatEnergy(device.reference_capacity_mwh)}
-          helper={formatValue(device.reference_capacity_source)}
+          label="Разница SOH"
+          value={formatPercent(sohGap)}
         />
-        {sohGap !== null && (
-          <MetricCard
-            label="Разница SOH"
-            value={formatPercent(sohGap)}
-            helper="SOH по ёмкости минус SOH по энергии"
-          />
-        )}
         {overallAverageLoadMw !== null && (
           <MetricCard
             label="Средняя нагрузка"
             value={formatWattsFromMilliwatts(overallAverageLoadMw)}
-            helper="Взвешено по длительности учитываемых циклов"
           />
         )}
         {averageRuntimeSeconds !== null && (
           <MetricCard
             label="Среднее время работы"
             value={formatDuration(averageRuntimeSeconds)}
-            helper="Только учитываемые циклы"
           />
         )}
       </section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <h2>Активная сессия</h2>
-            <p>Текущая сессия разряда, если она есть.</p>
+      {activeSession && (
+        <section className="section-block">
+          <div className="section-heading">
+            <div>
+              <h2>Активная сессия</h2>
+            </div>
           </div>
-        </div>
-        {activeSession ? (
           <div className="active-session-grid">
-            <StatusBadge variant="success">Активна</StatusBadge>
             <span>
               Начало
               <strong>{formatDate(activeSession.started_at_client)}</strong>
@@ -301,6 +289,10 @@ function DevicePage() {
             <span>
               Последнее время клиента
               <strong>{formatDate(activeSession.last_client_time)}</strong>
+            </span>
+            <span>
+              Длительность
+              <strong>{formatDuration(activeSession.duration_seconds)}</strong>
             </span>
             <span>
               Начальный заряд
@@ -311,28 +303,28 @@ function DevicePage() {
               <strong>{formatPercent(activeSession.current_charge_percent)}</strong>
             </span>
             <span>
+              Текущая мощность
+              <strong>
+                {formatPowerMw(
+                  currentPowerMw ??
+                    activeSession.current_net_power_mw ??
+                    activeSession.current_power_mw ??
+                    activeSession.current_power,
+                )}
+              </strong>
+            </span>
+            <span>
               Разряжено
               <strong>{formatEnergy(activeSession.discharged_energy_mwh)}</strong>
             </span>
-            <span>
-              Длительность
-              <strong>{formatDuration(activeSession.duration_seconds)}</strong>
-            </span>
-            <span>
-              Ожидающий переход
-              <strong>{translatePendingTransition(activeSession.pending_transition)}</strong>
-            </span>
           </div>
-        ) : (
-          <EmptyState title="Нет активной сессии" message="Сейчас устройство не разряжается." />
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="section-block">
         <div className="section-heading">
           <div>
             <h2>История ёмкости</h2>
-            <p>История деградации и ёмкости подготовлена сервером; исключённые циклы уже убраны.</p>
           </div>
         </div>
         <CapacityHistoryChart history={capacityHistory} />
@@ -341,8 +333,16 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Энергия за цикл</h2>
-            <p>Показаны только учитываемые циклы, чтобы график совпадал с серверной аналитикой.</p>
+            <h2>Разница SOH</h2>
+          </div>
+        </div>
+        <SohGapChart history={capacityHistory} />
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <h2>Рассчитанная ёмкость исходя из энергопотребления</h2>
           </div>
         </div>
         <EnergyPerCycleChart cycles={cycles} yMax={Number(device.reference_capacity_mwh)} />
@@ -351,8 +351,7 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Полная ёмкость заряда</h2>
-            <p>Полная доступная ёмкость батареи по данным системы, в mWh.</p>
+            <h2>Полная доступная ёмкость батареи по данным системы</h2>
           </div>
         </div>
         <FullChargeCapacityChart
@@ -365,7 +364,6 @@ function DevicePage() {
         <div className="section-heading">
           <div>
             <h2>Средняя нагрузка за цикл</h2>
-            <p>Средняя мощность учитываемого цикла, отображается в ваттах.</p>
           </div>
         </div>
         <AverageLoadPerCycleChart cycles={cycles} />
@@ -375,7 +373,6 @@ function DevicePage() {
         <div className="section-heading">
           <div>
             <h2>Время работы за цикл</h2>
-            <p>Сколько длился каждый учитываемый эквивалентный цикл.</p>
           </div>
         </div>
         <RuntimePerCycleChart cycles={cycles} />
@@ -385,7 +382,6 @@ function DevicePage() {
         <div className="section-heading">
           <div>
             <h2>Недавние сессии</h2>
-            <p>Последние записи сессий для этого устройства.</p>
           </div>
         </div>
         {recentSessions.length === 0 ? (
@@ -428,7 +424,6 @@ function DevicePage() {
         <div className="section-heading">
           <div>
             <h2>Циклы</h2>
-            <p>Исключённые циклы остаются видимыми, и их можно вернуть в аналитику.</p>
           </div>
         </div>
         {cycles.length === 0 ? (

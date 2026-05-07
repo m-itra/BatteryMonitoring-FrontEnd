@@ -74,10 +74,6 @@ function CapacityHistoryChart({ history = [] }) {
 
   return (
     <div className="chart-wrap">
-      <div className="chart-heading">
-        <strong>История ёмкости</strong>
-        <span>Значения подготовлены сервером</span>
-      </div>
       <div className="chart-legend">
         {activeSeries.map((series) => (
           <span key={series.key}>
@@ -101,9 +97,6 @@ function CapacityHistoryChart({ history = [] }) {
         })}
         <line x1={padding} y1={padding} x2={padding} y2={height - padding} />
         <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} />
-        <text className="chart-axis-label" x={padding} y={padding - 12}>
-          SOH %
-        </text>
         {activeSeries.map((series) => {
           const coordinates = series.points.map((point) => ({
             ...point,

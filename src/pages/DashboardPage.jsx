@@ -1,14 +1,64 @@
 import { Link } from "react-router-dom";
-import MetricCard from "../components/ui/MetricCard";
 import StatusBadge from "../components/ui/StatusBadge";
 import { EmptyState, ErrorState, LoadingState } from "../components/ui/State";
-import { useAuth } from "../hooks/useAuth";
 import { useDashboardAnalytics, useDevices } from "../hooks/useAnalytics";
 import { asArray, getCycleId, getDeviceId, getDeviceName, pick } from "../utils/data";
-import { formatDate, formatEnergy, formatPercent } from "../utils/format";
+import { formatDate, formatEnergy, formatPercent, formatWattHoursFromMilliwattHours } from "../utils/format";
+
+function hasMetricValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
+function getDeviceSohGap(device) {
+  const capacity = pick(device, ["soh_capacity_percent", "current_soh_capacity_percent"], undefined);
+  const energy = pick(device, ["soh_energy_percent", "current_soh_energy_percent"], undefined);
+
+  if (!hasMetricValue(capacity) || !hasMetricValue(energy)) {
+    return null;
+  }
+
+  const capacityNumber = Number(capacity);
+  const energyNumber = Number(energy);
+
+  if (Number.isNaN(capacityNumber) || Number.isNaN(energyNumber)) {
+    return null;
+  }
+
+  return capacityNumber - energyNumber;
+}
+
+function getCycleDeviceName(cycle, devices) {
+  const cycleDeviceId = pick(cycle, ["device_id", "deviceId", "battery_device_id"], undefined);
+  const cycleDeviceName = pick(cycle, ["device_name", "deviceName", "battery_device_name"], undefined);
+
+  if (cycleDeviceName) {
+    return cycleDeviceName;
+  }
+
+  if (!cycleDeviceId) {
+    return "-";
+  }
+
+  const device = devices.find((item) => getDeviceId(item) === cycleDeviceId);
+  return device ? getDeviceName(device) : cycleDeviceId;
+}
+
+function formatDeviceCount(count) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return `${count} устройство`;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${count} устройства`;
+  }
+
+  return `${count} устройств`;
+}
 
 function DashboardPage() {
-  const { user } = useAuth();
   const analyticsQuery = useDashboardAnalytics();
   const devicesQuery = useDevices();
 
@@ -26,11 +76,6 @@ function DashboardPage() {
     ? asArray(devicesQuery.data, ["devices"])
     : analyticsDevices;
   const recentCycles = asArray(analytics, ["recent_cycles", "cycles"]);
-  const totalCycleCount = pick(
-    analytics,
-    ["total_cycle_count", "total_cycles", "equivalent_cycles_count"],
-    recentCycles.length,
-  );
 
   return (
     <section className="page-stack">
@@ -38,24 +83,18 @@ function DashboardPage() {
         <div>
           <span className="eyebrow">Обзор</span>
           <h1>Панель мониторинга</h1>
-          <p>Состояние устройств на основе аналитики, рассчитанной сервером.</p>
         </div>
       </header>
-
-      <section className="metric-grid">
-        <MetricCard label="Текущий пользователь" value={user?.name || user?.email} helper={user?.email} />
-        <MetricCard label="Устройства" value={devices.length} helper="Привязаны к этому аккаунту" />
-        <MetricCard label="Всего циклов" value={totalCycleCount} helper="Без исключённых циклов" />
-        <MetricCard label="Недавние циклы" value={recentCycles.length} helper="Последние данные сервера" />
-      </section>
 
       <section className="section-block">
         <div className="section-heading">
           <div>
             <h2>Устройства</h2>
-            <p>Заряд, SOE, SOH и статус активности.</p>
           </div>
-          {devicesQuery.isError && <StatusBadge variant="warning">Резервный список</StatusBadge>}
+          <div className="badge-row">
+            <StatusBadge>{formatDeviceCount(devices.length)}</StatusBadge>
+            {devicesQuery.isError && <StatusBadge variant="warning">Резервный список</StatusBadge>}
+          </div>
         </div>
 
         {devices.length === 0 ? (
@@ -65,6 +104,7 @@ function DashboardPage() {
             {devices.map((device) => {
               const deviceId = getDeviceId(device);
               const activeSession = pick(device, ["has_active_session", "active_session"], false);
+              const sohGap = getDeviceSohGap(device);
 
               return (
                 <Link className="device-card" key={deviceId || getDeviceName(device)} to={`/devices/${deviceId}`}>
@@ -78,12 +118,10 @@ function DashboardPage() {
                   </div>
                   <div className="device-stats">
                     <span>
-                      Заряд
-                      <strong>{formatPercent(pick(device, ["charge_percent", "current_charge_percent"]))}</strong>
-                    </span>
-                    <span>
-                      SOE
-                      <strong>{formatPercent(pick(device, ["soe_percent", "current_soe_percent"]))}</strong>
+                      Эталонная ёмкость
+                      <strong>
+                        {formatWattHoursFromMilliwattHours(pick(device, ["reference_capacity_mwh"]))}
+                      </strong>
                     </span>
                     <span>
                       SOH по ёмкости
@@ -99,10 +137,11 @@ function DashboardPage() {
                         {formatPercent(pick(device, ["soh_energy_percent", "current_soh_energy_percent"]))}
                       </strong>
                     </span>
+                    <span>
+                      Разница SOH
+                      <strong>{formatPercent(sohGap)}</strong>
+                    </span>
                   </div>
-                  <footer>
-                    Последняя активность: {formatDate(pick(device, ["last_seen_at", "last_seen", "updated_at"]))}
-                  </footer>
                 </Link>
               );
             })}
@@ -114,7 +153,6 @@ function DashboardPage() {
         <div className="section-heading">
           <div>
             <h2>Недавние циклы</h2>
-            <p>Исключённые циклы остаются видимыми, но отображаются приглушённо.</p>
           </div>
         </div>
         {recentCycles.length === 0 ? (
@@ -124,6 +162,7 @@ function DashboardPage() {
             <table>
               <thead>
                 <tr>
+                  <th>Устройство</th>
                   <th>Начало</th>
                   <th>Конец</th>
                   <th>Энергия</th>
@@ -134,8 +173,9 @@ function DashboardPage() {
               <tbody>
                 {recentCycles.map((cycle) => (
                   <tr className={cycle.is_excluded ? "muted-row" : ""} key={getCycleId(cycle)}>
-                    <td>{formatDate(cycle.started_at)}</td>
-                    <td>{formatDate(cycle.ended_at)}</td>
+                    <td>{getCycleDeviceName(cycle, devices)}</td>
+                    <td>{formatDate(pick(cycle, ["started_at_client", "started_at"]))}</td>
+                    <td>{formatDate(pick(cycle, ["ended_at_client", "ended_at"]))}</td>
                     <td>{formatEnergy(cycle.total_energy_mwh)}</td>
                     <td>{formatPercent(cycle.soh_energy_percent)}</td>
                     <td>

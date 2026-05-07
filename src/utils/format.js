@@ -38,6 +38,19 @@ export function formatEnergy(value, unit = "mWh") {
   return `${number.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${unit}`;
 }
 
+export function formatWattHoursFromMilliwattHours(value) {
+  if (value === undefined || value === null || value === "") {
+    return "-";
+  }
+
+  const number = Number(value);
+  if (Number.isNaN(number)) {
+    return String(value);
+  }
+
+  return `${(number / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })} Wh`;
+}
+
 export function formatPowerMw(value) {
   if (value === undefined || value === null || value === "") {
     return "-";
