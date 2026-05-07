@@ -28,7 +28,7 @@ function AuthPage() {
   const redirectTo = location.state?.from?.pathname || "/";
 
   if (auth.isLoading) {
-    return <FullPageStatus title="Restoring session" message="Checking your saved session." />;
+    return <FullPageStatus title="Восстановление сессии" message="Проверяем сохранённую сессию." />;
   }
 
   if (auth.user) {
@@ -45,7 +45,7 @@ function AuthPage() {
       await auth.meQuery.refetch();
       navigate(redirectTo, { replace: true });
     } catch (loginError) {
-      setError(getErrorMessage(loginError, "Could not sign in."));
+      setError(getErrorMessage(loginError, "Не удалось войти."));
     }
   }
 
@@ -59,9 +59,9 @@ function AuthPage() {
       setMode("login");
       setLoginForm((current) => ({ ...current, email: registerForm.email }));
       setRegisterForm(initialRegister);
-      setMessage("Account created. Sign in with your new credentials.");
+      setMessage("Аккаунт создан. Войдите с новыми данными.");
     } catch (registerError) {
-      setError(getErrorMessage(registerError, "Could not create account."));
+      setError(getErrorMessage(registerError, "Не удалось создать аккаунт."));
     }
   }
 
@@ -72,25 +72,25 @@ function AuthPage() {
           <span className="brand-mark" aria-hidden="true">
             BM
           </span>
-          <h1>Battery Monitoring</h1>
-          <p>Secure battery analytics for devices, sessions, cycles, and fleet health.</p>
+          <h1>Мониторинг батареи</h1>
+          <p>Безопасная аналитика устройств, сессий, циклов и состояния батарей.</p>
         </div>
 
         <div className="auth-card">
-          <div className="segmented-control" role="tablist" aria-label="Authentication mode">
+          <div className="segmented-control" role="tablist" aria-label="Режим авторизации">
             <button
               className={mode === "login" ? "active" : ""}
               type="button"
               onClick={() => setMode("login")}
             >
-              Login
+              Вход
             </button>
             <button
               className={mode === "register" ? "active" : ""}
               type="button"
               onClick={() => setMode("register")}
             >
-              Register
+              Регистрация
             </button>
           </div>
 
@@ -100,7 +100,7 @@ function AuthPage() {
           {mode === "login" ? (
             <form className="form-stack" onSubmit={handleLogin}>
               <label>
-                Email
+                Электронная почта
                 <input
                   autoComplete="email"
                   name="email"
@@ -113,7 +113,7 @@ function AuthPage() {
                 />
               </label>
               <label>
-                Password
+                Пароль
                 <input
                   autoComplete="current-password"
                   name="password"
@@ -126,13 +126,13 @@ function AuthPage() {
                 />
               </label>
               <button className="button button-primary" disabled={auth.loginStatus.isPending} type="submit">
-                {auth.loginStatus.isPending ? "Signing in..." : "Sign in"}
+                {auth.loginStatus.isPending ? "Входим..." : "Войти"}
               </button>
             </form>
           ) : (
             <form className="form-stack" onSubmit={handleRegister}>
               <label>
-                Name
+                Имя
                 <input
                   autoComplete="name"
                   name="name"
@@ -145,7 +145,7 @@ function AuthPage() {
                 />
               </label>
               <label>
-                Email
+                Электронная почта
                 <input
                   autoComplete="email"
                   name="email"
@@ -158,7 +158,7 @@ function AuthPage() {
                 />
               </label>
               <label>
-                Password
+                Пароль
                 <input
                   autoComplete="new-password"
                   minLength={6}
@@ -176,7 +176,7 @@ function AuthPage() {
                 disabled={auth.registerStatus.isPending}
                 type="submit"
               >
-                {auth.registerStatus.isPending ? "Creating..." : "Create account"}
+                {auth.registerStatus.isPending ? "Создаём..." : "Создать аккаунт"}
               </button>
             </form>
           )}

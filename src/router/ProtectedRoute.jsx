@@ -7,7 +7,7 @@ function ProtectedRoute({ requireAdmin = false }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <FullPageStatus title="Restoring session" message="Checking your secure cookie." />;
+    return <FullPageStatus title="Восстановление сессии" message="Проверяем защищённую cookie." />;
   }
 
   if (!user) {

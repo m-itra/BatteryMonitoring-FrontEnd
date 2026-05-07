@@ -4,13 +4,13 @@ const SERIES = [
   {
     className: "chart-line-capacity",
     key: "soh_capacity_percent",
-    label: "SOH capacity",
+    label: "SOH по ёмкости",
     format: formatPercent,
   },
   {
     className: "chart-line-energy",
     key: "soh_energy_percent",
-    label: "SOH energy",
+    label: "SOH по энергии",
     format: formatPercent,
   },
 ];
@@ -30,7 +30,7 @@ function CapacityHistoryChart({ history = [] }) {
   if (activeSeries.length === 0) {
     return (
       <div className="chart-empty">
-        <p>No capacity history yet.</p>
+        <p>Пока нет истории ёмкости.</p>
       </div>
     );
   }
@@ -75,8 +75,8 @@ function CapacityHistoryChart({ history = [] }) {
   return (
     <div className="chart-wrap">
       <div className="chart-heading">
-        <strong>Capacity history</strong>
-        <span>Backend-prepared values</span>
+        <strong>История ёмкости</strong>
+        <span>Значения подготовлены сервером</span>
       </div>
       <div className="chart-legend">
         {activeSeries.map((series) => (
@@ -86,7 +86,7 @@ function CapacityHistoryChart({ history = [] }) {
           </span>
         ))}
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Capacity history chart">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="График истории ёмкости">
         {ticks.map((tick) => {
           const y = height - padding - ((tick - domainMin) / spread) * (height - padding * 2);
 

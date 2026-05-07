@@ -8,15 +8,16 @@ import { useAdminStats, useAdminUsers, useDeleteAdminUser } from "../hooks/useAd
 import { asArray } from "../utils/data";
 import { getErrorMessage } from "../utils/errors";
 import { formatDate, formatValue } from "../utils/format";
+import { translateRole } from "../utils/labels";
 
 const statLabels = {
-  users_count: "Users",
-  devices_count: "Devices",
-  active_sessions_count: "Active sessions",
-  completed_sessions_count: "Completed sessions",
-  interrupted_sessions_count: "Interrupted sessions",
-  equivalent_cycles_count: "Cycles",
-  excluded_cycles_count: "Excluded cycles",
+  users_count: "Пользователи",
+  devices_count: "Устройства",
+  active_sessions_count: "Активные сессии",
+  completed_sessions_count: "Завершённые сессии",
+  interrupted_sessions_count: "Прерванные сессии",
+  equivalent_cycles_count: "Циклы",
+  excluded_cycles_count: "Исключённые циклы",
 };
 
 function AdminPage() {
@@ -35,21 +36,21 @@ function AdminPage() {
   }, [navigate, statsQuery.error, usersQuery.error]);
 
   if (statsQuery.isPending || usersQuery.isPending) {
-    return <LoadingState title="Loading admin" message="Fetching system statistics and users." />;
+    return <LoadingState title="Загрузка админки" message="Получаем системную статистику и пользователей." />;
   }
 
   if (statsQuery.isError) {
-    return <ErrorState error={statsQuery.error} title="Admin stats unavailable" />;
+    return <ErrorState error={statsQuery.error} title="Статистика админки недоступна" />;
   }
 
   if (usersQuery.isError) {
-    return <ErrorState error={usersQuery.error} title="Admin users unavailable" />;
+    return <ErrorState error={usersQuery.error} title="Список пользователей недоступен" />;
   }
 
   const users = asArray(usersQuery.data, ["users"]);
 
   async function handleDeleteUser(targetUser) {
-    if (!window.confirm(`Delete ${targetUser.email} and related battery data?`)) {
+    if (!window.confirm(`Удалить ${targetUser.email} и связанные данные батарей?`)) {
       return;
     }
 
@@ -57,7 +58,7 @@ function AdminPage() {
     try {
       await deleteUserMutation.mutateAsync(targetUser.user_id);
     } catch (deleteError) {
-      setError(getErrorMessage(deleteError, "Could not delete user."));
+      setError(getErrorMessage(deleteError, "Не удалось удалить пользователя."));
     }
   }
 
@@ -65,9 +66,9 @@ function AdminPage() {
     <section className="page-stack">
       <header className="page-header">
         <div>
-          <span className="eyebrow">Administration</span>
-          <h1>System admin</h1>
-          <p>Admin-only statistics and user management.</p>
+          <span className="eyebrow">Администрирование</span>
+          <h1>Системная админка</h1>
+          <p>Статистика и управление пользователями только для администратора.</p>
         </div>
       </header>
 
@@ -82,24 +83,24 @@ function AdminPage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Users</h2>
-            <p>Deleting a user also deletes related battery data on the backend.</p>
+            <h2>Пользователи</h2>
+            <p>Удаление пользователя также удаляет связанные данные батарей на сервере.</p>
           </div>
         </div>
 
         {users.length === 0 ? (
-          <EmptyState title="No users" message="Registered users will appear here." />
+          <EmptyState title="Пользователей пока нет" message="Зарегистрированные пользователи появятся здесь." />
         ) : (
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>Name</th>
+                  <th>Имя</th>
                   <th>Email</th>
-                  <th>Role</th>
-                  <th>Created</th>
-                  <th>User id</th>
-                  <th>Actions</th>
+                  <th>Роль</th>
+                  <th>Создан</th>
+                  <th>ID пользователя</th>
+                  <th>Действия</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,7 +110,7 @@ function AdminPage() {
                     <td>{formatValue(account.email)}</td>
                     <td>
                       <StatusBadge variant={account.role === "admin" ? "warning" : "neutral"}>
-                        {formatValue(account.role)}
+                        {translateRole(account.role)}
                       </StatusBadge>
                     </td>
                     <td>{formatDate(account.created_at)}</td>
@@ -121,7 +122,7 @@ function AdminPage() {
                         type="button"
                         onClick={() => handleDeleteUser(account)}
                       >
-                        {account.user_id === user?.user_id ? "Current user" : "Delete"}
+                        {account.user_id === user?.user_id ? "Текущий пользователь" : "Удалить"}
                       </button>
                     </td>
                   </tr>

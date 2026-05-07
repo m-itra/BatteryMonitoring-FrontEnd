@@ -56,7 +56,7 @@ export function getDeviceId(device) {
 }
 
 export function getDeviceName(device) {
-  return pick(device, ["device_name", "name", "title", "label"], getDeviceId(device) || "Device");
+  return pick(device, ["device_name", "name", "title", "label"], getDeviceId(device) || "Устройство");
 }
 
 export function getCycleId(cycle) {

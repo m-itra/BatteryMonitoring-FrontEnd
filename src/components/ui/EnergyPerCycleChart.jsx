@@ -1,7 +1,7 @@
 import HistoryLineChart from "./HistoryLineChart";
 import { formatEnergy } from "../../utils/format";
 
-const VALUE_KEYS = [["total_energy_mwh", "Energy used per cycle"]];
+const VALUE_KEYS = [["total_energy_mwh", "Энергия за цикл"]];
 
 function EnergyPerCycleChart({ cycles = [], yMax }) {
   const includedCycles = cycles.filter((cycle) => !cycle.is_excluded);
@@ -9,8 +9,8 @@ function EnergyPerCycleChart({ cycles = [], yMax }) {
   return (
     <HistoryLineChart
       dateKeys={["ended_at_client"]}
-      emptyMessage="No included cycles with energy usage yet."
-      fallbackLabel="Energy used per cycle"
+      emptyMessage="Пока нет включённых циклов с расходом энергии."
+      fallbackLabel="Энергия за цикл"
       format={formatEnergy}
       history={includedCycles}
       showPointLabels

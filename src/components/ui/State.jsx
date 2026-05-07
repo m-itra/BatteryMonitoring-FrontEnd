@@ -10,7 +10,7 @@ export function FullPageStatus({ title, message }) {
   );
 }
 
-export function LoadingState({ title = "Loading", message = "Fetching fresh data." }) {
+export function LoadingState({ title = "Загрузка", message = "Получаем свежие данные." }) {
   return (
     <div className="state-box">
       <div className="spinner" aria-hidden="true" />
@@ -29,7 +29,7 @@ export function EmptyState({ title, message }) {
   );
 }
 
-export function ErrorState({ error, title = "Could not load data" }) {
+export function ErrorState({ error, title = "Не удалось загрузить данные" }) {
   return (
     <div className="state-box state-box-error">
       <h2>{title}</h2>

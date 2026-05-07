@@ -13,11 +13,11 @@ function DashboardPage() {
   const devicesQuery = useDevices();
 
   if (analyticsQuery.isPending) {
-    return <LoadingState title="Loading dashboard" message="Fetching analytics from the gateway." />;
+    return <LoadingState title="Загрузка обзора" message="Получаем аналитику через шлюз." />;
   }
 
   if (analyticsQuery.isError) {
-    return <ErrorState error={analyticsQuery.error} title="Dashboard unavailable" />;
+    return <ErrorState error={analyticsQuery.error} title="Обзор недоступен" />;
   }
 
   const analytics = analyticsQuery.data || {};
@@ -36,30 +36,30 @@ function DashboardPage() {
     <section className="page-stack">
       <header className="page-header">
         <div>
-          <span className="eyebrow">Overview</span>
-          <h1>Dashboard</h1>
-          <p>Live fleet health based on backend-calculated analytics.</p>
+          <span className="eyebrow">Обзор</span>
+          <h1>Панель мониторинга</h1>
+          <p>Состояние устройств на основе аналитики, рассчитанной сервером.</p>
         </div>
       </header>
 
       <section className="metric-grid">
-        <MetricCard label="Current user" value={user?.name || user?.email} helper={user?.email} />
-        <MetricCard label="Devices" value={devices.length} helper="Registered to this account" />
-        <MetricCard label="Total cycles" value={totalCycleCount} helper="Excludes muted cycles" />
-        <MetricCard label="Recent cycles" value={recentCycles.length} helper="Latest backend results" />
+        <MetricCard label="Текущий пользователь" value={user?.name || user?.email} helper={user?.email} />
+        <MetricCard label="Устройства" value={devices.length} helper="Привязаны к этому аккаунту" />
+        <MetricCard label="Всего циклов" value={totalCycleCount} helper="Без исключённых циклов" />
+        <MetricCard label="Недавние циклы" value={recentCycles.length} helper="Последние данные сервера" />
       </section>
 
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Devices</h2>
-            <p>Charge, SOE, SOH, and activity status.</p>
+            <h2>Устройства</h2>
+            <p>Заряд, SOE, SOH и статус активности.</p>
           </div>
-          {devicesQuery.isError && <StatusBadge variant="warning">Device list fallback</StatusBadge>}
+          {devicesQuery.isError && <StatusBadge variant="warning">Резервный список</StatusBadge>}
         </div>
 
         {devices.length === 0 ? (
-          <EmptyState title="No devices yet" message="Devices will appear after the backend receives telemetry." />
+          <EmptyState title="Устройств пока нет" message="Устройства появятся после получения телеметрии сервером." />
         ) : (
           <div className="device-grid">
             {devices.map((device) => {
@@ -71,14 +71,14 @@ function DashboardPage() {
                   <div className="device-card-head">
                     <h3>{getDeviceName(device)}</h3>
                     {activeSession ? (
-                      <StatusBadge variant="success">Active</StatusBadge>
+                      <StatusBadge variant="success">Активно</StatusBadge>
                     ) : (
-                      <StatusBadge>Idle</StatusBadge>
+                      <StatusBadge>Ожидание</StatusBadge>
                     )}
                   </div>
                   <div className="device-stats">
                     <span>
-                      Charge
+                      Заряд
                       <strong>{formatPercent(pick(device, ["charge_percent", "current_charge_percent"]))}</strong>
                     </span>
                     <span>
@@ -86,7 +86,7 @@ function DashboardPage() {
                       <strong>{formatPercent(pick(device, ["soe_percent", "current_soe_percent"]))}</strong>
                     </span>
                     <span>
-                      SOH capacity
+                      SOH по ёмкости
                       <strong>
                         {formatPercent(
                           pick(device, ["soh_capacity_percent", "current_soh_capacity_percent"]),
@@ -94,14 +94,14 @@ function DashboardPage() {
                       </strong>
                     </span>
                     <span>
-                      SOH energy
+                      SOH по энергии
                       <strong>
                         {formatPercent(pick(device, ["soh_energy_percent", "current_soh_energy_percent"]))}
                       </strong>
                     </span>
                   </div>
                   <footer>
-                    Last seen {formatDate(pick(device, ["last_seen_at", "last_seen", "updated_at"]))}
+                    Последняя активность: {formatDate(pick(device, ["last_seen_at", "last_seen", "updated_at"]))}
                   </footer>
                 </Link>
               );
@@ -113,22 +113,22 @@ function DashboardPage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Recent cycles</h2>
-            <p>Excluded cycles stay visible but muted.</p>
+            <h2>Недавние циклы</h2>
+            <p>Исключённые циклы остаются видимыми, но отображаются приглушённо.</p>
           </div>
         </div>
         {recentCycles.length === 0 ? (
-          <EmptyState title="No cycles recorded" message="Recent equivalent cycles will appear here." />
+          <EmptyState title="Циклов пока нет" message="Недавние эквивалентные циклы появятся здесь." />
         ) : (
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>Started</th>
-                  <th>Ended</th>
-                  <th>Energy</th>
-                  <th>SOH energy</th>
-                  <th>Status</th>
+                  <th>Начало</th>
+                  <th>Конец</th>
+                  <th>Энергия</th>
+                  <th>SOH по энергии</th>
+                  <th>Статус</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,9 +140,9 @@ function DashboardPage() {
                     <td>{formatPercent(cycle.soh_energy_percent)}</td>
                     <td>
                       {cycle.is_excluded ? (
-                        <StatusBadge variant="muted">Excluded</StatusBadge>
+                        <StatusBadge variant="muted">Исключён</StatusBadge>
                       ) : (
-                        <StatusBadge variant="success">Included</StatusBadge>
+                        <StatusBadge variant="success">Учитывается</StatusBadge>
                       )}
                     </td>
                   </tr>

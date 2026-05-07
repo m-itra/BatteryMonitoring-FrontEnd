@@ -18,6 +18,7 @@ import {
 } from "../hooks/useAnalytics";
 import { asArray, getCycleId, getDeviceName } from "../utils/data";
 import { getErrorMessage } from "../utils/errors";
+import { translatePendingTransition, translateSessionStatus } from "../utils/labels";
 import {
   formatDate,
   formatDuration,
@@ -103,11 +104,11 @@ function DevicePage() {
   const averageRuntimeSeconds = getAverageRuntimeSeconds(includedCycles);
 
   if (analyticsQuery.isPending) {
-    return <LoadingState title="Loading device" message="Collecting sessions, cycles, and capacity history." />;
+    return <LoadingState title="Загрузка устройства" message="Получаем сессии, циклы и историю ёмкости." />;
   }
 
   if (analyticsQuery.isError) {
-    return <ErrorState error={analyticsQuery.error} title="Device unavailable" />;
+    return <ErrorState error={analyticsQuery.error} title="Устройство недоступно" />;
   }
 
   async function handleRename(event) {
@@ -117,14 +118,14 @@ function DevicePage() {
 
     try {
       await renameMutation.mutateAsync({ deviceId, deviceName: deviceName.trim() });
-      setNotice("Device renamed.");
+      setNotice("Устройство переименовано.");
     } catch (renameError) {
-      setError(getErrorMessage(renameError, "Could not rename device."));
+      setError(getErrorMessage(renameError, "Не удалось переименовать устройство."));
     }
   }
 
   async function handleDeleteDevice() {
-    if (!window.confirm("Delete this device and its battery data?")) {
+    if (!window.confirm("Удалить это устройство и его данные батареи?")) {
       return;
     }
 
@@ -135,14 +136,14 @@ function DevicePage() {
       await deleteDeviceMutation.mutateAsync(deviceId);
       navigate("/", { replace: true });
     } catch (deleteError) {
-      setError(getErrorMessage(deleteError, "Could not delete device."));
+      setError(getErrorMessage(deleteError, "Не удалось удалить устройство."));
     }
   }
 
   async function handleCycleToggle(cycle) {
     const cycleId = getCycleId(cycle);
     if (!cycleId) {
-      setError("Cycle id is missing.");
+      setError("Отсутствует id цикла.");
       return;
     }
 
@@ -152,24 +153,24 @@ function DevicePage() {
     try {
       if (cycle.is_excluded) {
         await includeCycleMutation.mutateAsync({ deviceId, cycleId });
-        setNotice("Cycle included back into analytics.");
+        setNotice("Цикл снова учитывается в аналитике.");
       } else {
         await excludeCycleMutation.mutateAsync({ deviceId, cycleId });
-        setNotice("Cycle excluded from analytics.");
+        setNotice("Цикл исключён из аналитики.");
       }
     } catch (cycleError) {
-      setError(getErrorMessage(cycleError, "Could not update cycle."));
+      setError(getErrorMessage(cycleError, "Не удалось обновить цикл."));
     }
   }
 
   async function handleDeleteCycle(cycle) {
     const cycleId = getCycleId(cycle);
     if (!cycleId) {
-      setError("Cycle id is missing.");
+      setError("Отсутствует id цикла.");
       return;
     }
 
-    if (!window.confirm("Permanently delete this cycle and its sessions?")) {
+    if (!window.confirm("Навсегда удалить этот цикл и его сессии?")) {
       return;
     }
 
@@ -178,9 +179,9 @@ function DevicePage() {
 
     try {
       await deleteCycleMutation.mutateAsync({ deviceId, cycleId });
-      setNotice("Cycle deleted.");
+      setNotice("Цикл удалён.");
     } catch (cycleError) {
-      setError(getErrorMessage(cycleError, "Could not delete cycle."));
+      setError(getErrorMessage(cycleError, "Не удалось удалить цикл."));
     }
   }
 
@@ -189,10 +190,10 @@ function DevicePage() {
       <header className="page-header">
         <div>
           <Link className="back-link" to="/">
-            Dashboard
+            Обзор
           </Link>
           <h1>{getDeviceName(device)}</h1>
-          <p>Device analytics are shown exactly as calculated by the backend.</p>
+          <p>Аналитика устройства показана в том виде, в котором её рассчитал сервер.</p>
         </div>
         <button
           className="button button-danger"
@@ -200,7 +201,7 @@ function DevicePage() {
           type="button"
           onClick={handleDeleteDevice}
         >
-          Delete device
+          Удалить устройство
         </button>
       </header>
 
@@ -210,7 +211,7 @@ function DevicePage() {
 
       <form className="rename-form" onSubmit={handleRename}>
         <label>
-          Device name
+          Название устройства
           <input
             required
             type="text"
@@ -225,60 +226,60 @@ function DevicePage() {
           disabled={renameMutation.isPending || !deviceName.trim()}
           type="submit"
         >
-          {renameMutation.isPending ? "Saving..." : "Rename"}
+          {renameMutation.isPending ? "Сохраняем..." : "Переименовать"}
         </button>
       </form>
 
       <section className="metric-grid">
         <MetricCard
-          label="Current charge"
+          label="Текущий заряд"
           value={formatPercent(device.current_charge_percent)}
-          helper={`Last seen ${formatDate(device.last_seen)}`}
+          helper={`Последняя активность: ${formatDate(device.last_seen)}`}
         />
         <MetricCard
-          label="Current power"
+          label="Текущая мощность"
           value={formatPowerMw(device.current_net_power_mw)}
-          helper="Negative values mean charging"
+          helper="Отрицательные значения означают зарядку"
         />
         <MetricCard
           label="SOE"
           value={formatPercent(device.current_soe_percent)}
-          helper="Energy state"
+          helper="Состояние энергии"
         />
         <MetricCard
-          label="SOH capacity"
+          label="SOH по ёмкости"
           value={formatPercent(device.current_soh_capacity_percent)}
-          helper="Backend calculated"
+          helper="Рассчитано сервером"
         />
         <MetricCard
-          label="SOH energy"
+          label="SOH по энергии"
           value={formatPercent(device.current_soh_energy_percent)}
-          helper="Excludes muted cycles"
+          helper="Без исключённых циклов"
         />
         <MetricCard
-          label="Reference capacity"
+          label="Эталонная ёмкость"
           value={formatEnergy(device.reference_capacity_mwh)}
           helper={formatValue(device.reference_capacity_source)}
         />
         {sohGap !== null && (
           <MetricCard
-            label="SOH gap"
+            label="Разница SOH"
             value={formatPercent(sohGap)}
-            helper="Capacity SOH minus energy SOH"
+            helper="SOH по ёмкости минус SOH по энергии"
           />
         )}
         {overallAverageLoadMw !== null && (
           <MetricCard
-            label="Average load overall"
+            label="Средняя нагрузка"
             value={formatWattsFromMilliwatts(overallAverageLoadMw)}
-            helper="Weighted by included cycle duration"
+            helper="Взвешено по длительности учитываемых циклов"
           />
         )}
         {averageRuntimeSeconds !== null && (
           <MetricCard
-            label="Average runtime overall"
+            label="Среднее время работы"
             value={formatDuration(averageRuntimeSeconds)}
-            helper="Included cycles only"
+            helper="Только учитываемые циклы"
           />
         )}
       </section>
@@ -286,52 +287,52 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Active session</h2>
-            <p>Current discharge session if one exists.</p>
+            <h2>Активная сессия</h2>
+            <p>Текущая сессия разряда, если она есть.</p>
           </div>
         </div>
         {activeSession ? (
           <div className="active-session-grid">
-            <StatusBadge variant="success">Active</StatusBadge>
+            <StatusBadge variant="success">Активна</StatusBadge>
             <span>
-              Started
+              Начало
               <strong>{formatDate(activeSession.started_at_client)}</strong>
             </span>
             <span>
-              Last client time
+              Последнее время клиента
               <strong>{formatDate(activeSession.last_client_time)}</strong>
             </span>
             <span>
-              Start charge
+              Начальный заряд
               <strong>{formatPercent(activeSession.start_charge_percent)}</strong>
             </span>
             <span>
-              Current charge
+              Текущий заряд
               <strong>{formatPercent(activeSession.current_charge_percent)}</strong>
             </span>
             <span>
-              Discharged
+              Разряжено
               <strong>{formatEnergy(activeSession.discharged_energy_mwh)}</strong>
             </span>
             <span>
-              Duration
+              Длительность
               <strong>{formatDuration(activeSession.duration_seconds)}</strong>
             </span>
             <span>
-              Pending transition
-              <strong>{formatValue(activeSession.pending_transition)}</strong>
+              Ожидающий переход
+              <strong>{translatePendingTransition(activeSession.pending_transition)}</strong>
             </span>
           </div>
         ) : (
-          <EmptyState title="No active session" message="This device is idle right now." />
+          <EmptyState title="Нет активной сессии" message="Сейчас устройство не разряжается." />
         )}
       </section>
 
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Capacity history</h2>
-            <p>Backend-prepared degradation and capacity values; excluded cycles are already removed.</p>
+            <h2>История ёмкости</h2>
+            <p>История деградации и ёмкости подготовлена сервером; исключённые циклы уже убраны.</p>
           </div>
         </div>
         <CapacityHistoryChart history={capacityHistory} />
@@ -340,8 +341,8 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Energy used per cycle</h2>
-            <p>Shows non-excluded cycles for consistency with backend analytics.</p>
+            <h2>Энергия за цикл</h2>
+            <p>Показаны только учитываемые циклы, чтобы график совпадал с серверной аналитикой.</p>
           </div>
         </div>
         <EnergyPerCycleChart cycles={cycles} yMax={Number(device.reference_capacity_mwh)} />
@@ -350,8 +351,8 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Full charge capacity over time</h2>
-            <p>System-reported full available battery capacity in mWh.</p>
+            <h2>Полная ёмкость заряда</h2>
+            <p>Полная доступная ёмкость батареи по данным системы, в mWh.</p>
           </div>
         </div>
         <FullChargeCapacityChart
@@ -363,8 +364,8 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Average load per cycle</h2>
-            <p>Non-excluded cycle average power, displayed in watts.</p>
+            <h2>Средняя нагрузка за цикл</h2>
+            <p>Средняя мощность учитываемого цикла, отображается в ваттах.</p>
           </div>
         </div>
         <AverageLoadPerCycleChart cycles={cycles} />
@@ -373,8 +374,8 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Runtime per cycle</h2>
-            <p>How long each non-excluded equivalent cycle lasted.</p>
+            <h2>Время работы за цикл</h2>
+            <p>Сколько длился каждый учитываемый эквивалентный цикл.</p>
           </div>
         </div>
         <RuntimePerCycleChart cycles={cycles} />
@@ -383,23 +384,23 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Recent sessions</h2>
-            <p>Latest session records for this device.</p>
+            <h2>Недавние сессии</h2>
+            <p>Последние записи сессий для этого устройства.</p>
           </div>
         </div>
         {recentSessions.length === 0 ? (
-          <EmptyState title="No sessions" message="Sessions will appear as telemetry is processed." />
+          <EmptyState title="Сессий пока нет" message="Сессии появятся после обработки телеметрии." />
         ) : (
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>Started</th>
-                  <th>Ended</th>
-                  <th>Discharge delta</th>
-                  <th>Energy</th>
-                  <th>Duration</th>
-                  <th>Status</th>
+                  <th>Начало</th>
+                  <th>Конец</th>
+                  <th>Разряд</th>
+                  <th>Энергия</th>
+                  <th>Длительность</th>
+                  <th>Статус</th>
                 </tr>
               </thead>
               <tbody>
@@ -412,7 +413,7 @@ function DevicePage() {
                     <td>{formatDuration(session.duration_seconds)}</td>
                     <td>
                       <StatusBadge variant={session.status === "completed" ? "success" : "neutral"}>
-                        {formatValue(session.status)}
+                        {translateSessionStatus(session.status)}
                       </StatusBadge>
                     </td>
                   </tr>
@@ -426,25 +427,25 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Cycles</h2>
-            <p>Excluded cycles remain visible and can be included again.</p>
+            <h2>Циклы</h2>
+            <p>Исключённые циклы остаются видимыми, и их можно вернуть в аналитику.</p>
           </div>
         </div>
         {cycles.length === 0 ? (
-          <EmptyState title="No cycles" message="Equivalent cycles will appear here." />
+          <EmptyState title="Циклов пока нет" message="Эквивалентные циклы появятся здесь." />
         ) : (
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>Started</th>
-                  <th>Ended</th>
-                  <th>Energy</th>
-                  <th>Discharge</th>
-                  <th>SOH energy</th>
-                  <th>Degradation</th>
-                  <th>Excluded</th>
-                  <th>Actions</th>
+                  <th>Начало</th>
+                  <th>Конец</th>
+                  <th>Энергия</th>
+                  <th>Разряд</th>
+                  <th>SOH по энергии</th>
+                  <th>Деградация</th>
+                  <th>Исключён</th>
+                  <th>Действия</th>
                 </tr>
               </thead>
               <tbody>
@@ -458,9 +459,9 @@ function DevicePage() {
                     <td>{formatPercent(cycle.degradation_energy_percent)}</td>
                     <td>
                       {cycle.is_excluded ? (
-                        <StatusBadge variant="muted">Yes</StatusBadge>
+                        <StatusBadge variant="muted">Да</StatusBadge>
                       ) : (
-                        <StatusBadge variant="success">No</StatusBadge>
+                        <StatusBadge variant="success">Нет</StatusBadge>
                       )}
                     </td>
                     <td>
@@ -471,7 +472,7 @@ function DevicePage() {
                           type="button"
                           onClick={() => handleCycleToggle(cycle)}
                         >
-                          {cycle.is_excluded ? "Include" : "Exclude"}
+                          {cycle.is_excluded ? "Вернуть" : "Исключить"}
                         </button>
                         <button
                           className="button button-small button-danger"
@@ -479,7 +480,7 @@ function DevicePage() {
                           type="button"
                           onClick={() => handleDeleteCycle(cycle)}
                         >
-                          Delete
+                          Удалить
                         </button>
                       </div>
                     </td>

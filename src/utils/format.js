@@ -92,12 +92,12 @@ export function formatDuration(seconds) {
   const remainingSeconds = Math.floor(totalSeconds % 60);
 
   if (hours > 0) {
-    return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+    return `${hours} ч ${String(minutes).padStart(2, "0")} мин`;
   }
 
   if (minutes > 0) {
-    return `${minutes}m ${remainingSeconds}s`;
+    return `${minutes} мин ${remainingSeconds} с`;
   }
 
-  return `${remainingSeconds}s`;
+  return `${remainingSeconds} с`;
 }

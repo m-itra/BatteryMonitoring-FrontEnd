@@ -11,6 +11,8 @@ import {
   renameDevice,
 } from "../api/analytics";
 
+const DEVICE_ANALYTICS_REFETCH_INTERVAL_MS = 7000;
+
 function invalidateDeviceData(queryClient, deviceId) {
   queryClient.invalidateQueries({ queryKey: ["analytics"] });
   queryClient.invalidateQueries({ queryKey: ["devices"] });
@@ -37,6 +39,8 @@ export function useDeviceAnalytics(deviceId) {
     queryKey: ["device", deviceId],
     queryFn: () => getDeviceAnalytics(deviceId),
     enabled: Boolean(deviceId),
+    refetchInterval: DEVICE_ANALYTICS_REFETCH_INTERVAL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 

@@ -103,7 +103,7 @@ function HistoryLineChart({
           {format(domainMin)} - {format(domainMax)}
         </span>
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${label} history chart`}>
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`График: ${label}`}>
         {ticks.map((tick) => {
           const y =
             height -
