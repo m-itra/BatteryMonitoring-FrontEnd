@@ -53,15 +53,28 @@ function AuthPage() {
     event.preventDefault();
     setError("");
     setMessage("");
+    const credentials = {
+      email: registerForm.email,
+      password: registerForm.password,
+    };
 
     try {
       await auth.register(registerForm);
-      setMode("login");
-      setLoginForm((current) => ({ ...current, email: registerForm.email }));
-      setRegisterForm(initialRegister);
-      setMessage("Аккаунт создан. Войдите с новыми данными.");
     } catch (registerError) {
       setError(getErrorMessage(registerError, "Не удалось создать аккаунт."));
+      return;
+    }
+
+    try {
+      await auth.login(credentials);
+      await auth.meQuery.refetch();
+      navigate(redirectTo, { replace: true });
+    } catch (loginError) {
+      setMode("login");
+      setLoginForm({ email: credentials.email, password: "" });
+      setRegisterForm(initialRegister);
+      setMessage("Аккаунт создан, но автоматический вход не сработал. Войдите вручную.");
+      setError(getErrorMessage(loginError, "Не удалось войти автоматически."));
     }
   }
 
@@ -173,10 +186,14 @@ function AuthPage() {
               </label>
               <button
                 className="button button-primary"
-                disabled={auth.registerStatus.isPending}
+                disabled={auth.registerStatus.isPending || auth.loginStatus.isPending}
                 type="submit"
               >
-                {auth.registerStatus.isPending ? "Создаём..." : "Создать аккаунт"}
+                {auth.loginStatus.isPending
+                  ? "Входим..."
+                  : auth.registerStatus.isPending
+                    ? "Создаём..."
+                    : "Создать аккаунт"}
               </button>
             </form>
           )}

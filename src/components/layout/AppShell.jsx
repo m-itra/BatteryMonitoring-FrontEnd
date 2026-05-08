@@ -22,6 +22,7 @@ function AppShell() {
           <NavLink to="/" end>
             Обзор
           </NavLink>
+          <NavLink to="/help">Помощь</NavLink>
           <NavLink to="/profile">Профиль</NavLink>
           {user?.role === "admin" && <NavLink to="/admin">Админ</NavLink>}
         </nav>

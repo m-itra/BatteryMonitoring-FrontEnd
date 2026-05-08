@@ -6,6 +6,7 @@ import AdminPage from "../pages/AdminPage";
 import AuthPage from "../pages/AuthPage";
 import DashboardPage from "../pages/DashboardPage";
 import DevicePage from "../pages/DevicePage";
+import HelpPage from "../pages/HelpPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import ProfilePage from "../pages/ProfilePage";
 
@@ -17,6 +18,7 @@ function App() {
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
           <Route path="/devices/:deviceId" element={<DevicePage />} />
+          <Route path="/help" element={<HelpPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route element={<ProtectedRoute requireAdmin />}>
             <Route path="/admin" element={<AdminPage />} />

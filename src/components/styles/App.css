@@ -1,7 +1,7 @@
 .app-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
 }
 
 .sidebar {
@@ -230,6 +230,25 @@
   display: grid;
   gap: 18px;
   padding: 20px;
+}
+
+.help-copy {
+  display: grid;
+  gap: 12px;
+  max-width: 860px;
+}
+
+.help-steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--ink);
+}
+
+.help-steps li::marker {
+  color: var(--primary);
+  font-weight: 800;
 }
 
 .device-grid {
@@ -720,7 +739,7 @@ input:focus {
   }
 
   .nav-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   }
 
   .nav-list a {
