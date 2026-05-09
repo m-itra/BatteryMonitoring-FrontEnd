@@ -73,6 +73,33 @@
   color: #ffffff;
 }
 
+.sidebar-footer {
+  margin-top: auto;
+}
+
+.download-link {
+  display: grid;
+  gap: 3px;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.download-link:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.download-link span {
+  font-weight: 760;
+}
+
+.download-link small {
+  color: #9fb8b3;
+}
+
 .workspace {
   min-width: 0;
   display: flex;

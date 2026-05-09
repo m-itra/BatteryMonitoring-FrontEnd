@@ -26,6 +26,18 @@ function AppShell() {
           <NavLink to="/profile">Профиль</NavLink>
           {user?.role === "admin" && <NavLink to="/admin">Админ</NavLink>}
         </nav>
+
+        <div className="sidebar-footer">
+          <a
+            className="download-link"
+            href="https://github.com/m-itra/BatteryMonitoringClient"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <span>Скачать приложение</span>
+            <small>GitHub</small>
+          </a>
+        </div>
       </aside>
 
       <div className="workspace">
