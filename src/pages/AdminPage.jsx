@@ -67,8 +67,7 @@ function AdminPage() {
       <header className="page-header">
         <div>
           <span className="eyebrow">Администрирование</span>
-          <h1>Системная админка</h1>
-          <p>Статистика и управление пользователями только для администратора.</p>
+          <h1>Панель администратора</h1>
         </div>
       </header>
 
