@@ -4,13 +4,13 @@ const SERIES = [
   {
     className: "chart-line-capacity",
     key: "soh_capacity_percent",
-    label: "SOH по ёмкости",
+    label: "SOH по данным контроллера",
     format: formatPercent,
   },
   {
     className: "chart-line-energy",
     key: "soh_energy_percent",
-    label: "SOH по энергии",
+    label: "SOH по энергии циклов",
     format: formatPercent,
   },
 ];

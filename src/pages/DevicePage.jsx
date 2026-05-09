@@ -249,15 +249,15 @@ function DevicePage() {
           value={formatEnergy(device.reference_capacity_mwh)}
         />
         <MetricCard
-          label="SOH по ёмкости"
+          label="SOH по данным контроллера"
           value={formatPercent(device.current_soh_capacity_percent)}
         />
         <MetricCard
-          label="SOH по энергии"
+          label="SOH по энергии циклов"
           value={formatPercent(device.current_soh_energy_percent)}
         />
         <MetricCard
-          label="Разница SOH"
+          label="Разница между SOH"
           value={formatPercent(sohGap)}
         />
         {overallAverageLoadMw !== null && (
@@ -333,7 +333,7 @@ function DevicePage() {
       <section className="section-block">
         <div className="section-heading">
           <div>
-            <h2>Разница SOH</h2>
+            <h2>Разница между SOH</h2>
           </div>
         </div>
         <SohGapChart history={capacityHistory} />
@@ -437,7 +437,7 @@ function DevicePage() {
                   <th>Конец</th>
                   <th>Энергия</th>
                   <th>Разряд</th>
-                  <th>SOH по энергии</th>
+                  <th>SOH по энергии циклов</th>
                   <th>Деградация</th>
                   <th>Исключён</th>
                   <th>Действия</th>

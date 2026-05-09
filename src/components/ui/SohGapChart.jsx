@@ -1,7 +1,7 @@
 import HistoryLineChart from "./HistoryLineChart";
 import { formatPercent } from "../../utils/format";
 
-const VALUE_KEYS = [["soh_gap_percent", "Разница SOH"]];
+const VALUE_KEYS = [["soh_gap_percent", "Разница между SOH"]];
 
 function hasValue(value) {
   return value !== undefined && value !== null && value !== "";
@@ -34,8 +34,8 @@ function SohGapChart({ history = [] }) {
   return (
     <HistoryLineChart
       dateKeys={["recorded_at"]}
-      emptyMessage="Пока нет данных для разницы SOH."
-      fallbackLabel="Разница SOH"
+      emptyMessage="Пока нет данных для разницы между SOH."
+      fallbackLabel="Разница между SOH"
       format={formatPercent}
       history={gapHistory}
       showPointLabels

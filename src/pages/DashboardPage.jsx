@@ -124,7 +124,7 @@ function DashboardPage() {
                       </strong>
                     </span>
                     <span>
-                      SOH по ёмкости
+                      SOH по данным контроллера
                       <strong>
                         {formatPercent(
                           pick(device, ["soh_capacity_percent", "current_soh_capacity_percent"]),
@@ -132,13 +132,13 @@ function DashboardPage() {
                       </strong>
                     </span>
                     <span>
-                      SOH по энергии
+                      SOH по энергии циклов
                       <strong>
                         {formatPercent(pick(device, ["soh_energy_percent", "current_soh_energy_percent"]))}
                       </strong>
                     </span>
                     <span>
-                      Разница SOH
+                      Разница между SOH
                       <strong>{formatPercent(sohGap)}</strong>
                     </span>
                   </div>
@@ -166,7 +166,7 @@ function DashboardPage() {
                   <th>Начало</th>
                   <th>Конец</th>
                   <th>Энергия</th>
-                  <th>SOH по энергии</th>
+                  <th>SOH по энергии циклов</th>
                   <th>Статус</th>
                 </tr>
               </thead>
