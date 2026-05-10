@@ -64,7 +64,7 @@ export function formatPowerMw(value) {
   return `${number.toLocaleString(undefined, { maximumFractionDigits: 2 })} mW`;
 }
 
-export function formatWattsFromMilliwatts(value) {
+export function formatWattsFromMilliwatts(value, maximumFractionDigits = 2) {
   if (value === undefined || value === null || value === "") {
     return "-";
   }
@@ -74,7 +74,7 @@ export function formatWattsFromMilliwatts(value) {
     return String(value);
   }
 
-  return `${(number / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })} W`;
+  return `${(number / 1000).toLocaleString(undefined, { maximumFractionDigits })} W`;
 }
 
 export function formatDate(value) {
@@ -90,7 +90,7 @@ export function formatDate(value) {
   return date.toLocaleString();
 }
 
-export function formatDuration(seconds) {
+export function formatDuration(seconds, { includeSeconds = false } = {}) {
   if (seconds === undefined || seconds === null || seconds === "") {
     return "-";
   }
@@ -105,6 +105,10 @@ export function formatDuration(seconds) {
   const remainingSeconds = Math.floor(totalSeconds % 60);
 
   if (hours > 0) {
+    if (includeSeconds) {
+      return `${hours} ч ${String(minutes).padStart(2, "0")} мин ${remainingSeconds} с`;
+    }
+
     return `${hours} ч ${String(minutes).padStart(2, "0")} мин`;
   }
 

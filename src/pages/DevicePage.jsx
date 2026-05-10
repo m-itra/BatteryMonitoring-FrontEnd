@@ -263,13 +263,13 @@ function DevicePage() {
         {overallAverageLoadMw !== null && (
           <MetricCard
             label="Средняя нагрузка"
-            value={formatWattsFromMilliwatts(overallAverageLoadMw)}
+            value={formatWattsFromMilliwatts(overallAverageLoadMw, 3)}
           />
         )}
         {averageRuntimeSeconds !== null && (
           <MetricCard
             label="Среднее время работы"
-            value={formatDuration(averageRuntimeSeconds)}
+            value={formatDuration(averageRuntimeSeconds, { includeSeconds: true })}
           />
         )}
       </section>
